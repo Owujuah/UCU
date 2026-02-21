@@ -18,14 +18,14 @@ interface Transaction {
   receiverName: string;
   receiverAccount: string;
   amount: number;
-  date: string;
+  date: any; // Firestore Timestamp or Date
   type: 'transfer' | 'deposit' | 'withdrawal';
-  status?: 'success' | 'pending' | 'failed';
+  status?:  | 'pending' | 'failed';
 }
 
 interface TransactionHistoryProps {
   refreshTrigger?: number;
-  filter?: 'all' | 'pending' | 'failed' | 'success';
+  filter?: 'all' | 'pending' | 'failed' ;
 }
 
 const TransactionHistory = ({ refreshTrigger, filter = 'all' }: TransactionHistoryProps) => {
@@ -39,50 +39,25 @@ const TransactionHistory = ({ refreshTrigger, filter = 'all' }: TransactionHisto
       if (userId) {
         const userTransactions = await getUserTransactions(userId);
         
-        // Modify transactions to include status - first one is success, others alternate
-        const modifiedTransactions = userTransactions.map((transaction, index) => {
-          let status: 'success' | 'pending' | 'failed';
-          if (index === 0) {
-            status = 'success';
-          } else if (index % 2 === 0) {
-            status = 'failed';
-          } else {
-            status = 'pending';
-          }
-          
-          return {
-            ...transaction,
-            status
-          };
-        });
+        // Convert Firestore timestamps to Date objects for consistent formatting
+        const formattedTransactions = userTransactions.map((tx: any) => ({
+          ...tx,
+          date: tx.date?.toDate ? tx.date.toDate() : new Date(tx.date),
+          status: tx.status || 'pending', // default if missing
+        }));
         
-        // Sort by date in descending order (newest first)
-        const sortedTransactions = modifiedTransactions.sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        
-        setTransactions(sortedTransactions);
-        
-        // Apply status filter if specified
-        if (filter !== 'all') {
-          const statusFiltered = sortedTransactions.filter(
-            transaction => transaction.status === filter
-          );
-          setFilteredTransactions(statusFiltered);
-        } else {
-          setFilteredTransactions(sortedTransactions);
-        }
+        setTransactions(formattedTransactions);
       }
     };
 
     loadTransactions();
-  }, [refreshTrigger, filter]);
+  }, [refreshTrigger]);
   
-  // Filter transactions when search term changes
+  // Filter transactions when search term or filter changes
   useEffect(() => {
     let filtered = transactions;
     
-    // First apply status filter if needed
+    // First apply status filter
     if (filter !== 'all') {
       filtered = filtered.filter(transaction => transaction.status === filter);
     }
@@ -90,8 +65,8 @@ const TransactionHistory = ({ refreshTrigger, filter = 'all' }: TransactionHisto
     // Then apply search term filter
     if (searchTerm) {
       filtered = filtered.filter(transaction => 
-        transaction.receiverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.receiverAccount.includes(searchTerm) ||
+        transaction.receiverName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction.receiverAccount?.includes(searchTerm) ||
         transaction.amount.toString().includes(searchTerm) ||
         formatDate(transaction.date).toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -106,10 +81,8 @@ const TransactionHistory = ({ refreshTrigger, filter = 'all' }: TransactionHisto
   };
   
   // Get status badge color
-  const getStatusColor = (status?: 'success' | 'pending' | 'failed') => {
+  const getStatusColor = (status?:  'pending' | 'failed') => {
     switch (status) {
-      case 'success':
-        return 'bg-green-500';
       case 'pending':
         return 'bg-yellow-500';
       case 'failed':

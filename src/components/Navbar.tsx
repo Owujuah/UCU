@@ -76,7 +76,7 @@ const Navbar = () => {
               <img src="/Images/image 2.png" alt="owujuah" />
             </span>
           </div>
-          <span className="font-bold text-xl">Unity Grande</span>
+          <span className="font-bold text-xl">Unity Credit Union</span>
         </Link>
         
         {!isMobile && (

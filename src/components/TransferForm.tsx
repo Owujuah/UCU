@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
-import { getCurrentUserId, getUserById, INITIAL_BALANCE } from '../utils/authUtils';
+import { getCurrentUserId, getUserById } from '../utils/authUtils';
 import { updateUser, addTransaction, formatCurrency } from '../utils/storageUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,8 @@ import { Label } from '@/components/ui/label';
 const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }) => {
   const [receiverName, setReceiverName] = useState('');
   const [receiverAccount, setReceiverAccount] = useState('');
+  const [receiverTransit, setReceiverTransit] = useState(''); // New field
+  const [receiverBank, setReceiverBank] = useState('');       // New field
   const [amount, setAmount] = useState('');
   const [formattedAmount, setFormattedAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +25,7 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
       if (userId) {
         const user = await getUserById(userId);
         if (user) {
-          setBalance(INITIAL_BALANCE);
+          setBalance(user.balance);
         }
       }
     };
@@ -34,8 +36,7 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9.]/g, '');
     const parts = value.split('.');
-    const formattedValue =
-      parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : value;
+    const formattedValue = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : value;
     setAmount(formattedValue);
 
     const numValue = parseFloat(formattedValue);
@@ -50,7 +51,6 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Retrieve current user id and user data asynchronously
     const userId = await getCurrentUserId();
     if (!userId) {
       toast({
@@ -71,8 +71,8 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
       return;
     }
 
-    // Validate form inputs
-    if (!receiverName || !receiverAccount || !amount) {
+    // Validate all fields
+    if (!receiverName || !receiverAccount || !receiverTransit || !receiverBank || !amount) {
       toast({
         title: "Validation Error",
         description: "Please fill in all fields.",
@@ -91,7 +91,6 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
       return;
     }
 
-    // Check for sufficient funds
     if (parsedAmount > user.balance) {
       toast({
         title: "Insufficient Funds",
@@ -113,12 +112,14 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
         };
         await updateUser(updatedUser);
 
-        // Create a transaction record
+        // Create a transaction record with new fields
         const transaction = {
           id: uuidv4(),
           senderId: userId,
           receiverName,
           receiverAccount,
+          receiverTransit,   // New field
+          receiverBank,      // New field
           amount: parsedAmount,
           date: new Date().toISOString(),
           type: 'transfer' as const
@@ -128,18 +129,18 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
         // Reset the form
         setReceiverName('');
         setReceiverAccount('');
+        setReceiverTransit('');
+        setReceiverBank('');
         setAmount('');
         setFormattedAmount('');
         setBalance(updatedUser.balance);
 
-        // Show success toast
         toast({
           title: "Transfer Successful",
-          description: `You have transferred ${formatCurrency(parsedAmount)} to ${receiverName}.`,
+          description: `You have transferred ${formatCurrency(parsedAmount)}.`,
           variant: "default"
         });
 
-        // Notify parent component to update data
         onTransferComplete();
       } catch (error) {
         console.error('Transfer error:', error);
@@ -157,7 +158,7 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
   return (
     <form onSubmit={handleTransfer} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="receiverName">Recipient Name</Label>
+        <Label htmlFor="receiverName">Recipient Account Name</Label>
         <Input
           id="receiverName"
           placeholder="John Doe"
@@ -179,7 +180,30 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
           className="w-full"
         />
       </div>
-      
+
+      <div className="space-y-2">
+        <Label htmlFor="receiverTransit">Branch Transit Number</Label>
+        <Input
+          id="receiverTransit"
+          placeholder="12345"
+          value={receiverTransit}
+          onChange={(e) => setReceiverTransit(e.target.value)}
+          disabled={isLoading}
+          className="w-full"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="receiverBank">Bank Name</Label>
+        <Input
+          id="receiverBank"
+          placeholder="Bank of America"
+          value={receiverBank}
+          onChange={(e) => setReceiverBank(e.target.value)}
+          disabled={isLoading}
+          className="w-full"
+        />
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="amount">Amount</Label>
@@ -202,7 +226,7 @@ const TransferForm = ({ onTransferComplete }: { onTransferComplete: () => void }
           )}
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Available Balance: {formatCurrency(INITIAL_BALANCE)}
+          Available Balance: {formatCurrency(balance)}
         </p>
       </div>
 

@@ -16,7 +16,6 @@ const Profile = () => {
     name: '',
     email: '',
     balance: 0,
-    createdAt: '',
   });
   
   useEffect(() => {
@@ -24,21 +23,20 @@ const Profile = () => {
       // Check if the user is authenticated
       const auth = await isAuthenticated();
       if (!auth) {
-        navigate('/Profile');
+        navigate('/login'); // Changed from '/Profile' to '/login' (probably a typo)
         return;
       }
       
       // Retrieve the current user's ID
       const userId = await getCurrentUserId();
       if (userId) {
-        // Fetch the user data from Supabase
+        // Fetch the user data from Firestore (or Supabase, but we're using Firebase)
         const user = await getUserById(userId);
         if (user) {
           setUserData({
-            name: user.name,
-            email: user.email,
-            balance: user.balance,
-            createdAt: user.createdAt,
+            name: user.name || '',
+            email: user.email || '',
+            balance: user.balance || 0,
           });
         }
       }
@@ -77,14 +75,14 @@ const Profile = () => {
           <div className="flex flex-col items-center mb-8">
             <Avatar className="w-24 h-24 mb-4">
               <AvatarFallback className="text-3xl bg-banking-primary text-white">
-                {userData.name ? userData.name.substring(0, 1) : 'U'}
+                {userData.name ? userData.name.substring(0, 1).toUpperCase() : 'U'}
               </AvatarFallback>
             </Avatar>
             <h1 className="text-3xl font-bold mb-2">{userData.name || 'User'}</h1>
             <p className="text-gray-500 dark:text-gray-400 mb-2">{userData.email || 'No email'}</p>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            {/* <div className="text-sm text-gray-500 dark:text-gray-400">
               Member since {formatDate(userData.createdAt)}
-            </div>
+            </div> */}
             <div className="mt-4 text-xl font-semibold">
               Balance: {formatCurrency(userData.balance)}
             </div>

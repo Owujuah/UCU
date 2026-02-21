@@ -202,9 +202,9 @@ const Index = () => {
       <section id="about" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center max-w-3xl mx-auto mb-16 animate-on-scroll opacity-0">
-            <h2 className="text-3xl font-bold mb-4">About Finatera</h2>
+            <h2 className="text-3xl font-bold mb-4">About Unity Credit Union</h2>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Finatera is a modern banking platform designed to make financial services accessible to everyone.
+              UCU is a modern banking platform designed to make financial services accessible to everyone.
             </p>
           </div>
           

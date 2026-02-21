@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getCurrentUserId, getUserById, INITIAL_BALANCE } from '../utils/authUtils';
+import { getCurrentUserId } from '../utils/authUtils';
 import { formatCurrency } from '../utils/storageUtils';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../utils/firebaseClient';
 
 interface VirtualCardProps {
   simplifiedView?: boolean;
@@ -25,15 +27,20 @@ const VirtualCard = ({ simplifiedView = false }: VirtualCardProps) => {
     const loadUserData = async () => {
       const userId = await getCurrentUserId();
       if (userId) {
-        const user = await getUserById(userId);
-        if (user) {
-          setUserName(user.name);
-          setCardNumber(user.cardNumber);
-          setExpiryDate(user.expiryDate);
-          setCvv(user.cvv);
-          setBalance(user.balance);
-          setCardType(user.cardNumber.startsWith('4') ? 'visa' : 'mastercard');
-        }
+        // Real-time listener for user document
+        const unsubscribe = onSnapshot(doc(db, 'users', userId), (doc) => {
+          if (doc.exists()) {
+            const user = doc.data();
+            setUserName(user.name || '');
+            setCardNumber(user.cardNumber || '');
+            setExpiryDate(user.expiryDate || '');
+            setCvv(user.cvv || '');
+            setBalance(user.balance || 0);
+            setCardType(user.cardNumber?.startsWith('4') ? 'visa' : 'mastercard');
+          }
+        });
+
+        return () => unsubscribe();
       }
     };
 
@@ -60,7 +67,7 @@ const VirtualCard = ({ simplifiedView = false }: VirtualCardProps) => {
             <div className="flex justify-center items-center h-full">
               <div className="text-center">
                 <p className="text-sm text-white/80 mb-1">Available Balance</p>
-                <p className="text-2xl font-bold">{formatCurrency(INITIAL_BALANCE)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(balance)}</p>
               </div>
             </div>
           </div>
@@ -83,7 +90,7 @@ const VirtualCard = ({ simplifiedView = false }: VirtualCardProps) => {
                 <span className="font-bold text-white text-lg">U</span>
               </div>
               <div className="text-right">
-                <p className="text-lg font-semibold">{formatCurrency(INITIAL_BALANCE)}</p>
+                <p className="text-lg font-semibold">{formatCurrency(balance)}</p>
               </div>
             </div>
             <div className="space-y-6">

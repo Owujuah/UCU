@@ -14,7 +14,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [userName, setUserName] = useState('');
-  const [balance, setBalance] = useState(INITIAL_BALANCE); // initial value, will update from DB
+  const [balance, setBalance] = useState(0);
+  // const [balance, setBalance] = useState(INITIAL_BALANCE); // initial value, will update from DB
   
   // Load user data (including balance) on mount or when refreshTrigger changes
   useEffect(() => {
@@ -49,7 +50,7 @@ const Dashboard = () => {
       
       <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Unity Grande Dashboard</h1>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
           <div>
             <p className="text-lg text-gray-600 dark:text-gray-400">
               Welcome, <span className="font-semibold">{userName}</span>
@@ -57,7 +58,7 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-fcols-3 gap-8">
           {/* Card Balance Section */}
           <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">

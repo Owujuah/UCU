@@ -13,13 +13,13 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-full bg-banking-primary flex items-center justify-center">
                 <span className="text-white font-bold"><img src="/Images/image 2.png" alt="owujuah"/></span>
               </div>
-              <span className="font-bold text-xl">Unity Grande</span>
+              <span className="font-bold text-xl">Unity Credit Union</span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Fast. Secure. Trusted banking for the modern world.
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              © {currentYear} Unity Grande. All rights reserved.
+              © {currentYear} Unity Credit Union. All rights reserved.
             </p>
           </div>
           

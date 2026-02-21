@@ -12,7 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Cards from "./pages/Cards";
 import Transactions from "./pages/Transactions";
-import NotFound from "./pages/NotFound";
+// import NotFound from "./pages/NotFound";
 import { initAuth } from "./utils/authUtils";
 
 
